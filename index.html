@@ -54,7 +54,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            z-index: 2;
+            z-index: 10;
         }
 
         .header-status {
@@ -122,6 +122,7 @@
             transition: background-color 0.6s ease;
             background-color: var(--bg-kitchen);
             z-index: 1;
+            overflow: hidden;
         }
 
         .room-title {
@@ -132,6 +133,7 @@
             color: rgba(44, 62, 80, 0.35);
             text-transform: uppercase;
             letter-spacing: 3px;
+            pointer-events: none;
         }
 
         /* Pou Character Visual & Mega Engine */
@@ -203,7 +205,7 @@
             display: none;
             position: absolute;
             width: 30px; height: 30px; background: #2ecc71; opacity: 0.7;
-            border-radius: 50%; top: 10px; animation: float 2s infinite ease-in-out;
+            border-radius: 50%; top: 10px; animation: pulse 2s infinite ease-in-out;
         }
 
         /* Mega Evolution Visual Addons */
@@ -240,7 +242,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            z-index: 3; /* Menaikkan lapisan kustom kontrol agar bisa ditekan */
+            z-index: 15; /* Dinaikkan agar di atas room view */
         }
 
         .action-grid {
@@ -307,7 +309,7 @@
         /* Mini Game Mini Window */
         #minigame-container {
             display: none; position: absolute; width: 100%; height: 100%;
-            background: #27ae60; z-index: 10; flex-direction: column;
+            background: #27ae60; z-index: 20; flex-direction: column;
             align-items: center; justify-content: space-between; padding: 20px; box-sizing: border-box;
         }
         .game-canvas {
@@ -327,7 +329,8 @@
             background: var(--primary-dark);
             justify-content: space-around;
             padding: 15px 0;
-            z-index: 4; /* Layer teratas agar navigasi tidak tertutup apapun */
+            z-index: 30; /* Lapisan tertinggi absolut, bebas dari hambatan klik */
+            position: relative;
         }
         .nav-btn {
             background: none;
@@ -339,7 +342,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: all 0.3s;
-            padding: 8px 16px;
+            padding: 10px 16px;
             border-radius: 20px;
         }
         .nav-btn.active {
@@ -407,10 +410,8 @@
         </div>
     </div>
 
-    <!-- Tempat tombol aksi makan/beli -->
     <div class="interaction-panel" id="ctrl-panel"></div>
 
-    <!-- Tempat tombol pindah ruangan -->
     <div class="nav-bar">
         <button class="nav-btn active" onclick="switchRoom('kitchen', this)">Kitchen</button>
         <button class="nav-btn" onclick="switchRoom('lab', this)">Lab</button>
@@ -542,7 +543,7 @@
         document.getElementById('room-canvas').style.backgroundColor = roomInfo.bg;
         document.getElementById('room-name').innerText = roomInfo.name;
 
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('remove'));
+        // PERBAIKAN BUG: Menghapus baris crash "classList.remove('remove')"
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         if(btnEl) btnEl.classList.add('active');
 
@@ -555,15 +556,15 @@
         let html = "";
 
         if (p.isSleeping && currentRoom !== 'bedroom') {
-            panel.innerHTML = "<div style='text-align:center; color:#7f8c8d; font-weight:600;'>Pou is sleeping... Go to Bed Room to wake him up.</div>";
+            panel.innerHTML = "<div style='text-align:center; color:#7f8c8d; font-weight:600; font-size:13px;'>Pou sedang tidur... Pergi ke Bed Room untuk membangunkan.</div>";
             return;
         }
 
         if(currentRoom === 'kitchen') {
             html = `<div class="action-grid">
                 <div class="card-btn" onclick="useItem('bread', 'hunger', 20)">
-                    <div><b>Bread</b></div><div>Qty: ${p.inv.bread}</div>
-                    <div class="btn-row"><button class="buy-sub-btn" onclick="buyItem('bread', 10, event)">BUY $10</button></div>
+                    <div><b>Bread</b></div><div>Stok: ${p.inv.bread}</div>
+                    <div class="btn-row"><button class="buy-sub-btn" onclick="buyItem('bread', 10, event)">BELI $10</button></div>
                 </div>
                 <div class="card-btn" onclick="useItem('steak', 'hunger', 55)">
-                    <div><b>Steak</b></div><di
+                    <div><b>Steak<
