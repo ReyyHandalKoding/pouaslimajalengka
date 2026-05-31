@@ -54,6 +54,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
+            z-index: 2;
         }
 
         .header-status {
@@ -120,6 +121,7 @@
             align-items: center;
             transition: background-color 0.6s ease;
             background-color: var(--bg-kitchen);
+            z-index: 1;
         }
 
         .room-title {
@@ -188,12 +190,10 @@
         }
 
         /* Kuman / Efek Sakit Visual */
-        .dirt-spot, .sick-face {
+        .dirt-spot {
             display: none;
             position: absolute;
             z-index: 3;
-        }
-        .dirt-spot {
             width: 20px; height: 15px; background: #8b5a2b; border-radius: 50%;
         }
         #dirt1 { top: 30px; left: 25px; }
@@ -240,6 +240,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            z-index: 3; /* Menaikkan lapisan kustom kontrol agar bisa ditekan */
         }
 
         .action-grid {
@@ -326,6 +327,7 @@
             background: var(--primary-dark);
             justify-content: space-around;
             padding: 15px 0;
+            z-index: 4; /* Layer teratas agar navigasi tidak tertutup apapun */
         }
         .nav-btn {
             background: none;
@@ -337,7 +339,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: all 0.3s;
-            padding: 5px 12px;
+            padding: 8px 16px;
             border-radius: 20px;
         }
         .nav-btn.active {
@@ -347,7 +349,6 @@
 
         /* System Utility Classes */
         @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -406,8 +407,10 @@
         </div>
     </div>
 
+    <!-- Tempat tombol aksi makan/beli -->
     <div class="interaction-panel" id="ctrl-panel"></div>
 
+    <!-- Tempat tombol pindah ruangan -->
     <div class="nav-bar">
         <button class="nav-btn active" onclick="switchRoom('kitchen', this)">Kitchen</button>
         <button class="nav-btn" onclick="switchRoom('lab', this)">Lab</button>
@@ -474,26 +477,21 @@
     function updateUI() {
         determineEvolution();
 
-        // Top Dashboard Text
         document.getElementById('ui-level').innerText = p.level;
         document.getElementById('ui-coins').innerText = p.coins;
 
-        // Progress Fill Bars
         document.getElementById('bar-hunger').style.width = p.hunger + '%';
         document.getElementById('bar-health').style.width = p.health + '%';
         document.getElementById('bar-energy').style.width = p.energy + '%';
         document.getElementById('bar-clean').style.width = p.clean + '%';
 
-        // Customization Application
         document.getElementById('pet-core').style.setProperty('--pet-color', p.color);
         document.getElementById('pet-hat').className = "hat " + (p.hat !== 'none' ? p.hat : '');
 
-        // Handle Dirty & Sick Visual Effects
         document.getElementById('dirt1').style.display = p.clean < 40 ? 'block' : 'none';
         document.getElementById('dirt2').style.display = p.clean < 20 ? 'block' : 'none';
         document.getElementById('sick-indicator').style.display = p.isSick ? 'block' : 'none';
 
-        // Face Expression Logic Engine
         let mouth = document.getElementById('pet-mouth');
         let pl = document.getElementById('pupil-l');
         let pr = document.getElementById('pupil-r');
@@ -508,12 +506,10 @@
             pl.style.height = '16px'; pr.style.height = '16px';
             
             if(p.hunger < 35 || p.health < 35 || p.clean < 35 || p.isSick) {
-                // Sad / Sick Expression
                 mouth.style.borderBottom = 'none';
                 mouth.style.borderTop = '6px solid #2c3e50';
                 mouth.style.top = '115px';
             } else {
-                // Happy Expression
                 mouth.style.borderBottom = '6px solid #2c3e50';
                 mouth.style.borderTop = 'none';
                 mouth.style.top = '105px';
@@ -531,7 +527,6 @@
             p.xp -= nextXp;
             p.level++;
             p.coins += 100;
-            // Visual Level Up Notification Effect
             let originalScale = p.level >= 12 ? 1.25 : (p.level >= 8 ? 1.15 : (p.level >= 4 ? 1.0 : 0.8));
             let wrapper = document.getElementById('pet-wrapper');
             wrapper.style.transform = `scale(${originalScale * 1.3})`;
@@ -547,6 +542,7 @@
         document.getElementById('room-canvas').style.backgroundColor = roomInfo.bg;
         document.getElementById('room-name').innerText = roomInfo.name;
 
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('remove'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         if(btnEl) btnEl.classList.add('active');
 
@@ -570,4 +566,4 @@
                     <div class="btn-row"><button class="buy-sub-btn" onclick="buyItem('bread', 10, event)">BUY $10</button></div>
                 </div>
                 <div class="card-btn" onclick="useItem('steak', 'hunger', 55)">
-                    <div><b>St
+                    <div><b>Steak</b></div><di
