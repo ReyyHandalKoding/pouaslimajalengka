@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pou Mega Evolution - Premium Web Edition</title>
+    <style>
+        :root {
+            --pet-color: #cd853f;
+            --bg-kitchen: #fff3e0;
+            --bg-lab: #e0f2f1;
+            --bg-gameroom: #e8f5e9;
+            --bg-bedroom: #e8eaf6;
+            --bg-closet: #fce4ec;
+            --primary-dark: #2c3e50;
+            --accent-color: #3498db;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #74b9ff, #a29bfe);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        #game-window {
+            width: 100%;
+            max-width: 450px;
+            height: 95vh;
+            background: #ffffff;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 6px solid var(--primary-dark);
+        }
+
+        /* Top Dashboard UI */
+        .dashboard {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 3px solid #dee2e6;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .header-status {
+            grid-column: 1 / 3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--primary-dark);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .evolution-badge {
+            background: #e74c3c;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .stat-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .bar-bg {
+            width: 100%;
+            background: #e9ecef;
+            height: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ced4da;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
+        }
+
+        /* Room Arena */
+        .room-view {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.6s ease;
+            background-color: var(--bg-kitchen);
+        }
+
+        .room-title {
+            position: absolute;
+            top: 20px;
+            font-size: 24px;
+            font-weight: 800;
+            color: rgba(44, 62, 80, 0.35);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        /* Pou Character Visual & Mega Engine */
+        .pet-container {
+            position: relative;
+            width: 200px;
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+
+        .pet-body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--pet-color);
+            border-radius: 50% 50% 42% 42%;
+            position: relative;
+            box-shadow: inset -15px -15px 25px rgba(0,0,0,0.25), 0 15px 20px rgba(0,0,0,0.15);
+            transition: background-color 0.4s, border-radius 0.5s;
+        }
+
+        .eye {
+            width: 38px;
+            height: 38px;
+            background: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            top: 45px;
+            border: 2px solid #2c3e50;
+        }
+        .eye.left { left: 45px; }
+        .eye.right { right: 45px; }
+
+        .pupil {
+            width: 16px;
+            height: 16px;
+            background: #2c3e50;
+            border-radius: 50%;
+            position: absolute;
+            top: 11px;
+            left: 11px;
+            transition: all 0.2s;
+        }
+
+        .mouth {
+            width: 40px;
+            height: 20px;
+            border-bottom: 6px solid #2c3e50;
+            border-radius: 50%;
+            position: absolute;
+            top: 105px;
+            left: 80px;
+            transition: all 0.2s;
+        }
+
+        /* Kuman / Efek Sakit Visual */
+        .dirt-spot, .sick-face {
+            display: none;
+            position: absolute;
+            z-index: 3;
+        }
+        .dirt-spot {
+            width: 20px; height: 15px; background: #8b5a2b; border-radius: 50%;
+        }
+        #dirt1 { top: 30px; left: 25px; }
+        #dirt2 { bottom: 30px; right: 30px; }
+        
+        .sick-wing {
+            display: none;
+            position: absolute;
+            width: 30px; height: 30px; background: #2ecc71; opacity: 0.7;
+            border-radius: 50%; top: 10px; animation: float 2s infinite ease-in-out;
+        }
+
+        /* Mega Evolution Visual Addons */
+        .mega-horns {
+            display: none;
+            position: absolute;
+            top: -25px; width: 100%; justify-content: space-between; padding: 0 30px;
+        }
+        .horn {
+            width: 25px; height: 40px; background: #e74c3c; border-radius: 100% 0 0 0; transform: rotate(-20px);
+            box-shadow: inset -3px 0 5px rgba(0,0,0,0.2);
+        }
+        .horn.right-horn { border-radius: 0 100% 0 0; transform: rotate(20px); }
+
+        .hat {
+            display: none; position: absolute; top: -25px; left: 50px; width: 100px; height: 45px; z-index: 4;
+        }
+        .hat.tophat { display: block; background: #2c3e50; border-radius: 8px 8px 0 0; border-bottom: 8px solid #cbd5e1; }
+        .hat.crown { display: block; background: #f1c40f; clip-path: polygon(0% 100%, 0% 20%, 25% 60%, 50% 0%, 75% 60%, 100% 20%, 100% 100%); height: 50px; top: -30px;}
+
+        /* Dark Mode Bedroom Overlay */
+        .sleep-overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 19, 43, 0.93); z-index: 6; justify-content: center;
+            align-items: center; color: #f1f2f6; font-size: 26px; font-weight: 700; letter-spacing: 2px;
+        }
+
+        /* Interaction Panel UI */
+        .interaction-panel {
+            background: #ffffff;
+            padding: 20px;
+            border-top: 3px solid #dee2e6;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        .card-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 10px 14px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .card-btn:hover {
+            border-color: var(--accent-color);
+            background: #f1f9ff;
+            transform: translateY(-2px);
+        }
+
+        .btn-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 8px;
+            align-items: center;
+        }
+
+        .buy-sub-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .buy-sub-btn:hover { background: #2980b9; }
+
+        .action-main-btn {
+            grid-column: 1/3;
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: 0.2s;
+            text-align: center;
+        }
+        .action-main-btn:hover { background: #34495e; }
+
+        /* Mini Game Mini Window */
+        #minigame-container {
+            display: none; position: absolute; width: 100%; height: 100%;
+            background: #27ae60; z-index: 10; flex-direction: column;
+            align-items: center; justify-content: space-between; padding: 20px; box-sizing: border-box;
+        }
+        .game-canvas {
+            width: 100%; height: 75%; background: #ffffff; border-radius: 20px;
+            position: relative; overflow: hidden; box-shadow: inset 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .falling-object {
+            width: 30px; height: 30px; background: #f1c40f; border-radius: 50%;
+            position: absolute; cursor: pointer; animation: fallDown 2.5s linear forwards;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        @keyframes fallDown { 0% { top: -40px; } 100% { top: 100%; } }
+
+        /* Navigation Bar */
+        .nav-bar {
+            display: flex;
+            background: var(--primary-dark);
+            justify-content: space-around;
+            padding: 15px 0;
+        }
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #a4b0be;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        .nav-btn.active {
+            color: #ffffff;
+            background: rgba(255,255,255,0.15);
+        }
+
+        /* System Utility Classes */
+        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div id="game-window">
+    <div class="dashboard">
+        <div class="header-status">
+            <div>LEVEL <span id="ui-level">1</span></div>
+            <div class="evolution-badge" id="ui-evo">BABY</div>
+            <div>COINS: $<span id="ui-coins">100</span></div>
+        </div>
+        <div class="stat-group">
+            <span class="stat-label">Hunger</span>
+            <div class="bar-bg"><div id="bar-hunger" class="bar-fill" style="background:#2ecc71;"></div></div>
+        </div>
+        <div class="stat-group">
+            <span class="stat-label">Health</span>
+            <div class="bar-bg"><div id="bar-health" class="bar-fill" style="background:#e74c3c;"></div></div>
+        </div>
+        <div class="stat-group">
+            <span class="stat-label">Energy</span>
+            <div class="bar-bg"><div id="bar-energy" class="bar-fill" style="background:#f1c40f;"></div></div>
+        </div>
+        <div class="stat-group">
+            <span class="stat-label">Cleanliness</span>
+            <div class="bar-bg"><div id="bar-clean" class="bar-fill" style="background:#9b59b6;"></div></div>
+        </div>
+    </div>
+
+    <div class="room-view" id="room-canvas">
+        <div class="room-title" id="room-name">KITCHEN</div>
+        
+        <div class="sleep-overlay" id="sleep-screen">SLEEPING...</div>
+
+        <div id="minigame-container">
+            <div style="color:white; font-weight:700; font-size:18px;">CATCH THE COINS</div>
+            <div class="game-canvas" id="canvas-area"></div>
+            <button onclick="stopMiniGame()" class="action-main-btn" style="background:#e74c3c; padding:10px;">EXIT GAME</button>
+        </div>
+
+        <div class="pet-container" id="pet-wrapper">
+            <div class="mega-horns" id="mega-horns">
+                <div class="horn"></div>
+                <div class="horn right-horn"></div>
+            </div>
+            <div id="pet-hat" class="hat"></div>
+            <div class="pet-body" id="pet-core">
+                <div class="dirt-spot" id="dirt1"></div>
+                <div class="dirt-spot" id="dirt2"></div>
+                <div class="sick-wing" id="sick-indicator"></div>
+                
+                <div class="eye left"><div class="pupil" id="pupil-l"></div></div>
+                <div class="eye right"><div class="pupil" id="pupil-r"></div></div>
+                <div class="mouth" id="pet-mouth"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="interaction-panel" id="ctrl-panel"></div>
+
+    <div class="nav-bar">
+        <button class="nav-btn active" onclick="switchRoom('kitchen', this)">Kitchen</button>
+        <button class="nav-btn" onclick="switchRoom('lab', this)">Lab</button>
+        <button class="nav-btn" onclick="switchRoom('gameroom', this)">Play</button>
+        <button class="nav-btn" onclick="switchRoom('bedroom', this)">Sleep</button>
+        <button class="nav-btn" onclick="switchRoom('closet', this)">Closet</button>
+    </div>
+</div>
+
+<script>
+    // Core Game State Engine
+    let p = {
+        level: 1, xp: 0, coins: 150,
+        hunger: 100, health: 100, energy: 100, clean: 100,
+        isSleeping: false, isSick: false,
+        color: '#cd853f', hat: 'none', stage: 'BABY',
+        inv: { bread: 2, steak: 0, medicine: 1, soap: 1 }
+    };
+
+    const roomData = {
+        kitchen: { name: "Kitchen", bg: "var(--bg-kitchen)" },
+        lab: { name: "Laboratory", bg: "var(--bg-lab)" },
+        gameroom: { name: "Game Room", bg: "var(--bg-gameroom)" },
+        bedroom: { name: "Bed Room", bg: "var(--bg-bedroom)" },
+        closet: { name: "Closet Room", bg: "var(--bg-closet)" }
+    };
+
+    let currentRoom = 'kitchen';
+    let miniGameTimer;
+
+    // Load LocalStorage Data
+    if(localStorage.getItem('pou_mega_save')) {
+        p = JSON.parse(localStorage.getItem('pou_mega_save'));
+    }
+
+    function saveGame() {
+        localStorage.setItem('pou_mega_save', JSON.stringify(p));
+    }
+
+    function determineEvolution() {
+        let wrapper = document.getElementById('pet-wrapper');
+        let horns = document.getElementById('mega-horns');
+        
+        if (p.level >= 12) {
+            p.stage = "MEGA ADULT";
+            wrapper.style.transform = "scale(1.25)";
+            horns.style.display = "flex";
+        } else if (p.level >= 8) {
+            p.stage = "ADULT";
+            wrapper.style.transform = "scale(1.15)";
+            horns.style.display = "none";
+        } else if (p.level >= 4) {
+            p.stage = "KID";
+            wrapper.style.transform = "scale(1.0)";
+            horns.style.display = "none";
+        } else {
+            p.stage = "BABY";
+            wrapper.style.transform = "scale(0.8)";
+            horns.style.display = "none";
+        }
+        document.getElementById('ui-evo').innerText = p.stage;
+    }
+
+    function updateUI() {
+        determineEvolution();
+
+        // Top Dashboard Text
+        document.getElementById('ui-level').innerText = p.level;
+        document.getElementById('ui-coins').innerText = p.coins;
+
+        // Progress Fill Bars
+        document.getElementById('bar-hunger').style.width = p.hunger + '%';
+        document.getElementById('bar-health').style.width = p.health + '%';
+        document.getElementById('bar-energy').style.width = p.energy + '%';
+        document.getElementById('bar-clean').style.width = p.clean + '%';
+
+        // Customization Application
+        document.getElementById('pet-core').style.setProperty('--pet-color', p.color);
+        document.getElementById('pet-hat').className = "hat " + (p.hat !== 'none' ? p.hat : '');
+
+        // Handle Dirty & Sick Visual Effects
+        document.getElementById('dirt1').style.display = p.clean < 40 ? 'block' : 'none';
+        document.getElementById('dirt2').style.display = p.clean < 20 ? 'block' : 'none';
+        document.getElementById('sick-indicator').style.display = p.isSick ? 'block' : 'none';
+
+        // Face Expression Logic Engine
+        let mouth = document.getElementById('pet-mouth');
+        let pl = document.getElementById('pupil-l');
+        let pr = document.getElementById('pupil-r');
+
+        if (p.isSleeping) {
+            mouth.style.borderBottom = '3px solid #2c3e50';
+            mouth.style.borderRadius = '0';
+            mouth.style.width = '16px'; mouth.style.left = '92px';
+            pl.style.height = '2px'; pr.style.height = '2px';
+        } else {
+            mouth.style.width = '40px'; mouth.style.left = '80px';
+            pl.style.height = '16px'; pr.style.height = '16px';
+            
+            if(p.hunger < 35 || p.health < 35 || p.clean < 35 || p.isSick) {
+                // Sad / Sick Expression
+                mouth.style.borderBottom = 'none';
+                mouth.style.borderTop = '6px solid #2c3e50';
+                mouth.style.top = '115px';
+            } else {
+                // Happy Expression
+                mouth.style.borderBottom = '6px solid #2c3e50';
+                mouth.style.borderTop = 'none';
+                mouth.style.top = '105px';
+            }
+        }
+
+        document.getElementById('sleep-screen').style.display = p.isSleeping ? 'flex' : 'none';
+        saveGame();
+    }
+
+    function addXp(amount) {
+        p.xp += amount;
+        let nextXp = p.level * 120;
+        if(p.xp >= nextXp) {
+            p.xp -= nextXp;
+            p.level++;
+            p.coins += 100;
+            // Visual Level Up Notification Effect
+            let originalScale = p.level >= 12 ? 1.25 : (p.level >= 8 ? 1.15 : (p.level >= 4 ? 1.0 : 0.8));
+            let wrapper = document.getElementById('pet-wrapper');
+            wrapper.style.transform = `scale(${originalScale * 1.3})`;
+            setTimeout(() => { wrapper.style.transform = `scale(${originalScale})`; }, 600);
+        }
+        updateUI();
+    }
+
+    function switchRoom(room, btnEl) {
+        currentRoom = room;
+        let roomInfo = roomData[room];
+        
+        document.getElementById('room-canvas').style.backgroundColor = roomInfo.bg;
+        document.getElementById('room-name').innerText = roomInfo.name;
+
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        if(btnEl) btnEl.classList.add('active');
+
+        renderControlPanel();
+        updateUI();
+    }
+
+    function renderControlPanel() {
+        let panel = document.getElementById('ctrl-panel');
+        let html = "";
+
+        if (p.isSleeping && currentRoom !== 'bedroom') {
+            panel.innerHTML = "<div style='text-align:center; color:#7f8c8d; font-weight:600;'>Pou is sleeping... Go to Bed Room to wake him up.</div>";
+            return;
+        }
+
+        if(currentRoom === 'kitchen') {
+            html = `<div class="action-grid">
+                <div class="card-btn" onclick="useItem('bread', 'hunger', 20)">
+                    <div><b>Bread</b></div><div>Qty: ${p.inv.bread}</div>
+                    <div class="btn-row"><button class="buy-sub-btn" onclick="buyItem('bread', 10, event)">BUY $10</button></div>
+                </div>
+                <div class="card-btn" onclick="useItem('steak', 'hunger', 55)">
+                    <div><b>St
